@@ -1,0 +1,22 @@
+{
+    "name": "easy-api/easy-api",
+    "description": "This package makes building an API an easy job.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Modar Nahhas",
+            "email": "modarnahas@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.0",
+        "laravel/framework": ">=7.04"
+    },
+    "autoload": {
+        "psr-4": {
+            "easyapi\\": "src/"
+        }
+    }
+}
