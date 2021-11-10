@@ -1,5 +1,5 @@
 {
-    "name": "Mapi/Easyapi",
+    "name": "mapi/easyapi",
     "description": "This package makes building an API an easy job.",
     "type": "library",
     "license": "MIT",
