@@ -1,13 +1,13 @@
 <?php
 
-namespace EasyApi;
+namespace Mapi\Easyapi\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 
-class BaseUser extends Authenticatable
+class BaseModel extends Model
 {
     use HasFactory;
 
@@ -243,5 +243,4 @@ class BaseUser extends Authenticatable
     {
         return Schema::getColumnListing($this->getTable());
     }
-
 }
