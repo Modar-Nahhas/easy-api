@@ -105,7 +105,7 @@ class ApiModel extends Model
             }
         }
 
-        foreach ($filterRelations as $key) {
+        foreach ($filterOrRelations as $key) {
             $queryParam = explode('_', str_replace('or_where_relation_', '', $key));
             $relationName = $queryParam[0];
             $relationColumn = implode('_', array_slice($queryParam, 1));
