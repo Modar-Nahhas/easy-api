@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 
-class BaseUser extends Authenticatable
+class ApiUser extends Authenticatable
 {
     use HasFactory;
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 
-class BaseModel extends Model
+class ApiModel extends Model
 {
     use HasFactory;
 
@@ -57,8 +57,14 @@ class BaseModel extends Model
         $filtersKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'where_');
         });
+        $filtersOrKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_where_');
+        });
         $filterRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'where_relation');
+        });
+        $filterOrRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_where_relation');
         });
 
         if (count($allowedFilters) > 0) {
@@ -70,6 +76,12 @@ class BaseModel extends Model
             $filterName = str_replace('where_', '', $key);
             if (in_array($filterName, $directFilters)) {
                 $query = $query->where($filterName, $input[$key]);
+            }
+        }
+        foreach ($filtersOrKeys as $key) {
+            $filterName = str_replace('or_where_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->orWhere($filterName, $input[$key]);
             }
         }
 
@@ -92,6 +104,22 @@ class BaseModel extends Model
                 }
             }
         }
+
+        foreach ($filterRelations as $key) {
+            $queryParam = explode('_', str_replace('or_where_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['where_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->orWhereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->where($relationColumn, $value);
+                    });
+                }
+            }
+        }
+
         return $query;
     }
 
