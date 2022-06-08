@@ -54,17 +54,38 @@ class ApiModel extends Model
     protected function scopeFilter($query, array $input, array $allowedFilters = [], array $allowedRelationFilters = [])
     {
 
+        //Normal queries
         $filtersKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'where_');
         });
         $filtersOrKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'or_where_');
         });
+        $filterInKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereIn_');
+        });
+        $filterLikeKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereLike_');
+        });
+        $filterOrLikeKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereLike_');
+        });
+
+        //Relations
         $filterRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'where_relation');
         });
         $filterOrRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'or_where_relation');
+        });
+        $filterInRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereIn_relation');
+        });
+        $filterLikeRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereLike_relation');
+        });
+        $filterOrLikeRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereLike_relation');
         });
 
         if (count($allowedFilters) > 0) {
@@ -82,6 +103,24 @@ class ApiModel extends Model
             $filterName = str_replace('or_where_', '', $key);
             if (in_array($filterName, $directFilters)) {
                 $query = $query->orWhere($filterName, $input[$key]);
+            }
+        }
+        foreach ($filterInKeys as $key) {
+            $filterName = str_replace('whereIn_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->whereIn($filterName, $input[$key]);
+            }
+        }
+        foreach ($filterLikeKeys as $key) {
+            $filterName = str_replace('whereLike_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->where($filterName, 'like', '%' . $input[$key] . '%');
+            }
+        }
+        foreach ($filterOrLikeKeys as $key) {
+            $filterName = str_replace('or_whereLike_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->orWhere($filterName, 'like', '%' . $input[$key] . '%');
             }
         }
 
@@ -104,7 +143,6 @@ class ApiModel extends Model
                 }
             }
         }
-
         foreach ($filterOrRelations as $key) {
             $queryParam = explode('_', str_replace('or_where_relation_', '', $key));
             $relationName = $queryParam[0];
@@ -115,6 +153,48 @@ class ApiModel extends Model
                     $value = $input['where_relation_' . $relationName . '_' . $relationColumn];
                     $query = $query->orWhereHas($relationName, function ($query) use ($value, $relationColumn) {
                         $query->where($relationColumn, $value);
+                    });
+                }
+            }
+        }
+        foreach ($filterInRelations as $key) {
+            $queryParam = explode('_', str_replace('whereIn_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['whereIn_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->whereIn($relationColumn, $value);
+                    });
+                }
+            }
+        }
+        foreach ($filterLikeRelations as $key) {
+            $queryParam = explode('_', str_replace('whereLike_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['whereLike_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->where($relationColumn, 'like', '%' . $value . '%');
+                    });
+                }
+            }
+        }
+        foreach ($filterOrLikeRelations as $key) {
+            $queryParam = explode('_', str_replace('or_whereLike_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['or_whereLike_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->orWhere($relationColumn, 'like', '%' . $value . '%');
                     });
                 }
             }
