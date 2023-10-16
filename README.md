@@ -64,7 +64,7 @@ and minified version of the data. <br/>
 class MyModel extends ApiModel {
 
    protected $listColumnsToRetrieve = [
-      'id','name
+      'id','name'
    ];
 
 }
@@ -85,7 +85,9 @@ the `orderBy` and the `orderByDesc` functions provided by Laravel framework. For
 support sorting on one column. By default, the user is allowed to sort based on all columns.
 In order to limit the columns allowed to sort by, you can declare a variable
 called `$allowedColumnsToSortBy`. Its value should be an array of columns' names
-the user are allowed to sort by.
+the user are allowed to sort by. The client can ask to sort the records by sending
+parameters called `sort` which is a string represents the column name and `sort_desc` which
+is a boolean represent if the sort direction is descending or not.
 
 <pre>
 <code>
@@ -93,7 +95,7 @@ the user are allowed to sort by.
 class MyModel extends ApiModel {
 
    protected $allowedColumnsToSortBy = [
-      'id','name
+      'id','name'
    ];
 
 }
@@ -106,4 +108,42 @@ $data = [
 MyModel::query()->sort($data);`
 </code>
 </pre>
-   
+
+### Searching
+
+We have implemented this functionality in a scope called `search`. This scope
+uses the `where like` to search specific columns in the direct columns of the model
+or relation columns. By default, the search is not allowed for any column.
+In order to activate this functionality on `direct columns`, you need to define a variable in the model
+called `$allowedColumnsToSearch`. Its value should be an array of columns' names that
+the search process will be applied on. In order to activate this functionality on
+`relation columns`, you need to define a variable in the model called `$allowedRelationsToSearch`.
+Its value is an associative array. The `key` represents the `name of the relation` and the `value` is
+an array of columns' names that the code should search in the respective table.
+The client can use the search functionality by sending a parameter called `search` and the system
+will automatically search the direct columns and relations columns defined in the model
+
+
+<pre>
+<code>
+// Inside your model (MyModel)
+class MyModel extends ApiModel {
+
+   protected $allowedColumnsToSearch = [
+      'id','name
+   ];
+
+   protected $allowedRelationsToSearch = [
+      'relation_name_1' => [ 'id','name' ],
+      'relation_name_2' => [ 'name','price' ]
+   ];
+
+}
+
+// Where you need to sort the data (in controller for example)
+$data = [
+   'search' => 'search string',
+];
+MyModel::query()->search($data);`
+</code>
+</pre>
