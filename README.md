@@ -147,3 +147,104 @@ $data = [
 MyModel::query()->search($data);`
 </code>
 </pre>
+
+### Filtering
+
+We have implemented this functionality in a scope called filter.
+This scope support different types of filtering. Supported types are:
+
+#### Direct filter types
+
+* where_.
+* or_where_.
+* whereIn_.
+* whereLike_.
+* or_whereLike_.
+
+#### Relation filter types
+
+* where_relation_.
+* or_where_relation_.
+* whereIn_relation_.
+* whereLike_relation_.
+* or_whereLike_relation_.
+
+The filters work on direct columns of the model or relation's columns.
+In order to activate this functionality on `direct columns` you need to define
+a variable called `$allowedFilters` in the model. Its value should be an
+array of columns' names that the client is allowed to filter based on. In order
+to activate this functionality on `relation columns`, you need to define a variable in
+the model called `$allowedRelationsFilters`. Its value should ba an associative array.
+The `key` is the `name of the relation` we need to filter by its value, and the `value` is
+an array of columns' name the client is allowed to filter by its value. After you define
+the allowed columns to filter based on, the client can use the filters by sending the
+column name as parameter `prefixed` by one of the `direct filters types` for direct columns
+and `relation filters types` for relations' columns.
+
+
+<pre>
+<code>
+// Inside your model (MyModel)
+class MyModel extends ApiModel {
+
+   protected $allowedFilters = [
+      'id','name
+   ];
+
+   protected $allowedRelationsFilters = [
+      'relation_name_1' => [ 'id','name' ],
+      'relation_name_2' => [ 'name','price' ]
+   ];
+
+}
+
+// Where you need to sort the data (in controller for example)
+$data = [
+   'where_name' => 'name 1',
+   'where_relation_price' => 500
+];
+MyModel::query()->filter($data);`
+</code>
+</pre>
+
+### Loading relations
+
+We have implemented this functionality in a scope called `loadRelations`. This scope
+allow the client to ask the server to load relations without the need to create multiple
+APIs from the server side. One API can service different use cases of the client. In order to
+activate this functionality, you should define a variable called `$allowedRelationsToLoad` in the model.
+Its value should be an associative array. Its `key` represents the relation name. Its `value` should
+be an array of the `relation's columns we need to load`. You can use `*` to indicate that you want all
+columns to be loaded. </br>
+`PS: when you define a subset of the columns to be loaded, the foreign key column should be one
+of these values or the relation will be empty`.
+The client can use this functionality by sending a parameter representing the `relation name`
+needed to be loaded `prefixed` by `with_` and its value is boolean indicates that the relation is
+needed or not.
+
+
+<pre>
+<code>
+// Inside your model (MyModel)
+class MyModel extends ApiModel {
+
+   protected $allowedRelationsToLoad = [
+      'relation_name_1' => [ 'id','name' ],
+      'relation_name_2' => [ 'id','name','price' ]
+   ];
+
+}
+
+// Where you need to sort the data (in controller for example)
+$data = [
+   'with_relation_name_1' => 0,
+   'with_relation_name_2' => 1
+];
+MyModel::query()->loadRelations($data);`
+</code>
+</pre>
+
+### Applying all functionalities
+
+If you want all functionalities to be used, you can use the scope `applyAllFilters` and pass
+the input sent by the client.
