@@ -20,7 +20,7 @@ This package depends on inheritance and traits to add scopes to the Eloquent mod
 These scopes provide the basic functionalities mentioned before.
 It also provides a form request to make it easier to use these functionalities.
 
-# Description of the models provides
+# Description of the models provided
 
 1. To use it in an eloquent model, a model should inherit from one of these classes:
     * `ApiModel`: this class is used for models that should extend the `Illuminate\Database\Eloquent\Model` class.
@@ -75,6 +75,35 @@ $data = [
    'number' => 10
 ];
 MyModel::query()->getData($data);`
+</code>
+</pre>
+
+### Sorting
+
+We have implemented this functionality in a scope called `sort`. This scope uses
+the `orderBy` and the `orderByDesc` functions provided by Laravel framework. For now, sorting
+support sorting on one column. By default, the user is allowed to sort based on all columns.
+In order to limit the columns allowed to sort by, you can declare a variable
+called `$allowedColumnsToSortBy`. Its value should be an array of columns' names
+the user are allowed to sort by.
+
+<pre>
+<code>
+// Inside your model (MyModel)
+class MyModel extends ApiModel {
+
+   protected $allowedColumnsToSortBy = [
+      'id','name
+   ];
+
+}
+
+// Where you need to sort the data (in controller for example)
+$data = [
+   'sort' => 'column_name',
+   'sort_desc' => 1
+];
+MyModel::query()->sort($data);`
 </code>
 </pre>
    
