@@ -22,3 +22,8 @@ Homestead.json
 /.vagrant
 .phpunit.result.cache
 /.idea/php.xml
+/.idea/.gitignore
+/.idea/easy-api.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml

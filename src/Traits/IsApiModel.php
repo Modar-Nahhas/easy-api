@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 trait IsApiModel
 {
 
+
     /**
      * @var array The default columns to load when requesting records as a list.
      */
@@ -61,6 +62,9 @@ trait IsApiModel
         $filterInKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'whereIn_');
         });
+        $filterNotInKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereNotIn_');
+        });
         $filterLikeKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'whereLike_');
         });
@@ -77,6 +81,9 @@ trait IsApiModel
         });
         $filterInRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'whereIn_relation');
+        });
+        $filterNotInRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereNotIn_relation');
         });
         $filterLikeRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'whereLike_relation');
@@ -106,6 +113,12 @@ trait IsApiModel
             $filterName = str_replace('whereIn_', '', $key);
             if (in_array($filterName, $directFilters)) {
                 $query = $query->whereIn($filterName, $input[$key]);
+            }
+        }
+        foreach ($filterNotInKeys as $key) {
+            $filterName = str_replace('whereNotIn_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->whereNotIn($filterName, $input[$key]);
             }
         }
         foreach ($filterLikeKeys as $key) {
@@ -164,6 +177,20 @@ trait IsApiModel
                     $value = $input['whereIn_relation_' . $relationName . '_' . $relationColumn];
                     $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
                         $query->whereIn($relationColumn, $value);
+                    });
+                }
+            }
+        }
+        foreach ($filterNotInRelations as $key) {
+            $queryParam = explode('_', str_replace('whereNotIn_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['whereNotIn_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->whereNotIn($relationColumn, $value);
                     });
                 }
             }
@@ -348,4 +375,5 @@ trait IsApiModel
     {
         return Schema::getColumnListing($this->getTable());
     }
+
 }

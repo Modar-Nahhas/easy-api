@@ -158,6 +158,7 @@ This scope support different types of filtering. Supported types are:
 * where_.
 * or_where_.
 * whereIn_.
+* whereNotIn_.
 * whereLike_.
 * or_whereLike_.
 
@@ -166,6 +167,7 @@ This scope support different types of filtering. Supported types are:
 * where_relation_.
 * or_where_relation_.
 * whereIn_relation_.
+* whereNotIn_relation_.
 * whereLike_relation_.
 * or_whereLike_relation_.
 
