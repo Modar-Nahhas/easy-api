@@ -161,6 +161,10 @@ This scope support different types of filtering. Supported types are:
 * whereNotIn_.
 * whereLike_.
 * or_whereLike_.
+* whereNull_.
+* whereNotNull_.
+* or_whereNull_.
+* or_whereNotNull_.
 
 #### Relation filter types
 
@@ -170,6 +174,10 @@ This scope support different types of filtering. Supported types are:
 * whereNotIn_relation_.
 * whereLike_relation_.
 * or_whereLike_relation_.
+* or_whereNull_relation_.
+* or_whereNotNull_relation_.
+* whereNull_relation_.
+* whereNotNull_relation_.
 
 The filters work on direct columns of the model or relation's columns.
 In order to activate this functionality on `direct columns` you need to define

@@ -65,11 +65,29 @@ trait IsApiModel
         $filterNotInKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'whereNotIn_');
         });
+        $filterOrInKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereIn_');
+        });
+        $filterOrNotInKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereNotIn_');
+        });
         $filterLikeKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'whereLike_');
         });
         $filterOrLikeKeys = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'or_whereLike_');
+        });
+        $filterNull = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereNull_');
+        });
+        $filterNotNull = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereNotNull_');
+        });
+        $filterOrNull = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereNull_');
+        });
+        $filterOrNotNull = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereNotNull_');
         });
 
         //Relations
@@ -78,6 +96,12 @@ trait IsApiModel
         });
         $filterOrRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'or_where_relation');
+        });
+        $filterOrInRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereIn_relation');
+        });
+        $filterOrNotInRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereNotIn_relation');
         });
         $filterInRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'whereIn_relation');
@@ -91,11 +115,47 @@ trait IsApiModel
         $filterOrLikeRelations = collect(array_keys($input))->filter(function ($key) use ($input) {
             return str_contains($key, 'or_whereLike_relation');
         });
+        $filterNullRelation = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereNull_relation');
+        });
+        $filterNotNullRelation = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'whereNull_relation');
+        });
+        $filterOrNullRelation = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereNull_relation');
+        });
+        $filterOrNotNullRelation = collect(array_keys($input))->filter(function ($key) use ($input) {
+            return str_contains($key, 'or_whereNotNull_relation');
+        });
 
         if (count($allowedFilters) > 0) {
             $directFilters = $allowedFilters;
         } else {
             $directFilters = $this->allowedFilters;
+        }
+        foreach ($filtersKeys as $key) {
+            $filterName = str_replace('whereNull_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->whereNull($filterName);
+            }
+        }
+        foreach ($filtersKeys as $key) {
+            $filterName = str_replace('whereNotNull_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->whereNotNull($filterName);
+            }
+        }
+        foreach ($filtersKeys as $key) {
+            $filterName = str_replace('or_whereNull_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->orWhereNull($filterName);
+            }
+        }
+        foreach ($filtersKeys as $key) {
+            $filterName = str_replace('or_whereNotNull_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->orWhereNotNull($filterName);
+            }
         }
         foreach ($filtersKeys as $key) {
             $filterName = str_replace('where_', '', $key);
@@ -121,6 +181,18 @@ trait IsApiModel
                 $query = $query->whereNotIn($filterName, $input[$key]);
             }
         }
+        foreach ($filterOrInKeys as $key) {
+            $filterName = str_replace('or_whereIn_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->orWhereIn($filterName, $input[$key]);
+            }
+        }
+        foreach ($filterOrNotInKeys as $key) {
+            $filterName = str_replace('or_whereNotIn_', '', $key);
+            if (in_array($filterName, $directFilters)) {
+                $query = $query->orWhereNotIn($filterName, $input[$key]);
+            }
+        }
         foreach ($filterLikeKeys as $key) {
             $filterName = str_replace('whereLike_', '', $key);
             if (in_array($filterName, $directFilters)) {
@@ -138,6 +210,62 @@ trait IsApiModel
             $relationsFilters = $allowedRelationFilters;
         } else {
             $relationsFilters = $this->allowedRelationsFilters;
+        }
+        foreach ($filterNullRelation as $key) {
+            $queryParam = explode('_', str_replace('whereNull_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['whereNull_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->whereNull($relationColumn);
+                    });
+                }
+            }
+        }
+        foreach ($filterNotNullRelation as $key) {
+            $queryParam = explode('_', str_replace('whereNotNull_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['whereNotNull_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->whereNotNull($relationColumn);
+                    });
+                }
+            }
+        }
+        foreach ($filterOrNullRelation as $key) {
+            $queryParam = explode('_', str_replace('or_whereNull_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['or_whereNull_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->orWhereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->whereNull($relationColumn);
+                    });
+                }
+            }
+        }
+        foreach ($filterOrNotNullRelation as $key) {
+            $queryParam = explode('_', str_replace('or_whereNotNull_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['or_whereNotNull_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->orWhereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->whereNotNull($relationColumn);
+                    });
+                }
+            }
         }
         foreach ($filterRelations as $key) {
             $queryParam = explode('_', str_replace('where_relation_', '', $key));
@@ -191,6 +319,34 @@ trait IsApiModel
                     $value = $input['whereNotIn_relation_' . $relationName . '_' . $relationColumn];
                     $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
                         $query->whereNotIn($relationColumn, $value);
+                    });
+                }
+            }
+        }
+        foreach ($filterOrInRelations as $key) {
+            $queryParam = explode('_', str_replace('or_whereIn_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['or_whereIn_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->orWhereIn($relationColumn, $value);
+                    });
+                }
+            }
+        }
+        foreach ($filterOrNotInRelations as $key) {
+            $queryParam = explode('_', str_replace('or_whereNotIn_relation_', '', $key));
+            $relationName = $queryParam[0];
+            $relationColumn = implode('_', array_slice($queryParam, 1));
+            if (in_array($relationName, array_keys($relationsFilters))) {
+                $relationColumns = $relationsFilters[$relationName];
+                if (in_array($relationColumn, $relationColumns)) {
+                    $value = $input['or_whereNotIn_relation_' . $relationName . '_' . $relationColumn];
+                    $query = $query->whereHas($relationName, function ($query) use ($value, $relationColumn) {
+                        $query->orWhereNotIn($relationColumn, $value);
                     });
                 }
             }
