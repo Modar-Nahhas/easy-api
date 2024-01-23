@@ -133,25 +133,25 @@ trait IsApiModel
         } else {
             $directFilters = $this->allowedFilters;
         }
-        foreach ($filtersKeys as $key) {
+        foreach ($filterNull as $key) {
             $filterName = str_replace('whereNull_', '', $key);
             if (in_array($filterName, $directFilters)) {
                 $query = $query->whereNull($filterName);
             }
         }
-        foreach ($filtersKeys as $key) {
+        foreach ($filterNotNull as $key) {
             $filterName = str_replace('whereNotNull_', '', $key);
             if (in_array($filterName, $directFilters)) {
                 $query = $query->whereNotNull($filterName);
             }
         }
-        foreach ($filtersKeys as $key) {
+        foreach ($filterOrNull as $key) {
             $filterName = str_replace('or_whereNull_', '', $key);
             if (in_array($filterName, $directFilters)) {
                 $query = $query->orWhereNull($filterName);
             }
         }
-        foreach ($filtersKeys as $key) {
+        foreach ($filterOrNotNull as $key) {
             $filterName = str_replace('or_whereNotNull_', '', $key);
             if (in_array($filterName, $directFilters)) {
                 $query = $query->orWhereNotNull($filterName);
